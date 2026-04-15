@@ -1,0 +1,2 @@
+"""FourSight AI application package."""
+
