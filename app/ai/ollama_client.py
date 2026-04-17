@@ -25,6 +25,10 @@ def is_cloud_mode() -> bool:
     if explicit_enable in {"1", "true", "yes", "on"}:
         return False
 
+    home_directory = os.getenv("HOME", "").strip().lower()
+    if home_directory.startswith("/home/appuser"):
+        return True
+
     cloud_markers = {
         "STREAMLIT_SHARING_MODE": {"streamlit"},
         "IS_STREAMLIT_CLOUD": {"1", "true", "yes"},
@@ -129,6 +133,9 @@ def _http_request(
     body: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """Execute a JSON request against the local Ollama server."""
+    if is_cloud_mode():
+        raise RuntimeError(CLOUD_OLLAMA_MESSAGE)
+
     target_url = f"{OLLAMA_BASE_URL.rstrip('/')}{path}"
     data = None
     headers = {"Content-Type": "application/json"}

@@ -587,9 +587,8 @@ def render_ai_analyst(
         if ollama_status["available"]:
             st.success(ollama_status["message"])
         elif ollama_status.get("cloud_mode"):
-            st.info(ollama_status["message"])
-            st.write(
-                "This deployment keeps the full analytics workflow, AI Analyst layout, and report exports active while using deterministic fallback output instead of live local generation."
+            st.info(
+                "AI Analyst is running in cloud-safe mode. Local Ollama support is available only when running FourSight AI locally. Deterministic analytics, fallback insight flow, and TXT / HTML / PDF exports remain available."
             )
         else:
             st.warning(ollama_status["message"])
