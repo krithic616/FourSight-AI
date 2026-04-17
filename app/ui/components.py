@@ -586,6 +586,11 @@ def render_ai_analyst(
     with st.container(border=True):
         if ollama_status["available"]:
             st.success(ollama_status["message"])
+        elif ollama_status.get("cloud_mode"):
+            st.info(ollama_status["message"])
+            st.write(
+                "This deployment keeps the full analytics workflow, AI Analyst layout, and report exports active while using deterministic fallback output instead of live local generation."
+            )
         else:
             st.warning(ollama_status["message"])
             st.write("Start the local Ollama service to enable grounded AI answers. The rest of the analytics app remains fully available.")
@@ -662,7 +667,16 @@ def render_ai_analyst(
         )
 
         if not ollama_status["available"]:
+            if ollama_status.get("cloud_mode"):
+                st.info(
+                    "Cloud mode keeps deterministic analytics active. Live AI generation with local Ollama is available only when the app is run locally."
+                )
+                with st.container(border=True):
+                    st.markdown(generation_bundle["fallback_summary"])
+                return
             st.info("AI Analyst is currently unavailable because Ollama is not reachable locally. Start Ollama and try again.")
+            with st.container(border=True):
+                st.markdown(generation_bundle["fallback_summary"])
             return
         if st.session_state.get("ai_blocked_model") == selected_model and st.session_state.get("ai_blocked_reason"):
             st.warning(st.session_state["ai_blocked_reason"])

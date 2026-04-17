@@ -9,10 +9,46 @@ from urllib import error, request
 
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+CLOUD_OLLAMA_MESSAGE = (
+    "Local Ollama support is available in local mode only. Cloud deployment keeps deterministic analytics and "
+    "exports active. To use AI Analyst with local Ollama, run the app locally."
+)
+
+
+def is_cloud_mode() -> bool:
+    """Return whether the app is running in a hosted environment where local Ollama should stay disabled."""
+    explicit_disable = os.getenv("FOURSIGHT_DISABLE_LOCAL_OLLAMA", "").strip().lower()
+    if explicit_disable in {"1", "true", "yes", "on"}:
+        return True
+
+    explicit_enable = os.getenv("FOURSIGHT_ENABLE_LOCAL_OLLAMA", "").strip().lower()
+    if explicit_enable in {"1", "true", "yes", "on"}:
+        return False
+
+    cloud_markers = {
+        "STREAMLIT_SHARING_MODE": {"streamlit"},
+        "IS_STREAMLIT_CLOUD": {"1", "true", "yes"},
+        "STREAMLIT_RUNTIME_ENV": {"cloud", "community"},
+        "STREAMLIT_CLOUD": {"1", "true", "yes"},
+    }
+    for key, truthy_values in cloud_markers.items():
+        value = os.getenv(key, "").strip().lower()
+        if value and value in truthy_values:
+            return True
+    return False
 
 
 def get_ollama_status(timeout_seconds: int = 5) -> dict[str, object]:
     """Return local Ollama availability and detected models."""
+    if is_cloud_mode():
+        return {
+            "available": False,
+            "message": CLOUD_OLLAMA_MESSAGE,
+            "models": [],
+            "default_model": "phi3:mini",
+            "cloud_mode": True,
+        }
+
     try:
         payload = _http_request("/api/tags", method="GET", timeout_seconds=timeout_seconds)
     except RuntimeError as exc:
@@ -21,6 +57,7 @@ def get_ollama_status(timeout_seconds: int = 5) -> dict[str, object]:
             "message": str(exc),
             "models": [],
             "default_model": "phi3:mini",
+            "cloud_mode": False,
         }
 
     models = [model.get("name", "") for model in payload.get("models", []) if model.get("name")]
@@ -30,6 +67,7 @@ def get_ollama_status(timeout_seconds: int = 5) -> dict[str, object]:
         "message": "Ollama is reachable locally.",
         "models": models,
         "default_model": default_model,
+        "cloud_mode": False,
     }
 
 
@@ -39,6 +77,14 @@ def generate_ollama_response(
     timeout_seconds: int = 180,
 ) -> dict[str, object]:
     """Generate a non-streaming response from a local Ollama model."""
+    if is_cloud_mode():
+        return {
+            "success": False,
+            "response": "",
+            "error": CLOUD_OLLAMA_MESSAGE,
+            "error_type": "cloud_mode_disabled",
+        }
+
     if not model.strip():
         return {
             "success": False,
