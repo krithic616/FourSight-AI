@@ -75,7 +75,7 @@ Includes:
 
 AI Prompting and Insight Controller
 
-![AI Prompting](./dashboard3.jpeg)
+![AI Prompting](./dashboard5.jpeg)
 
 This section enables structured interaction with the AI Analyst.
 
