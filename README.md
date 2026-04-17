@@ -63,7 +63,7 @@ This is where raw analysis becomes visually interpretable for decision-making.
 
 AI Analyst Layer
 
-![AI Analyst](./dashboard5.jpeg)
+![AI Analyst](./dashboard4.jpeg)
 
 This layer integrates a local AI model to generate narrative insights.
 
