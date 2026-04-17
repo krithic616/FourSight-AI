@@ -53,8 +53,6 @@ FourSight AI is a modern analytics workspace* that converts raw CSV datasets int
 
  📈 3. KPI & Visualization Layer
 
-![KPI Charts](./dashboard4.jpeg)
-
 - KPI cards (growth, risk, efficiency, priorities)
 - Visual comparison charts
 - Clean dark-mode dashboard styling
